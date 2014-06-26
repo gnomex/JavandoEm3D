@@ -25,7 +25,6 @@ import javax.media.j3d.PositionInterpolator;
 import javax.media.j3d.RotPosPathInterpolator;
 import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.ScaleInterpolator;
-import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.SwitchValueInterpolator;
 import javax.media.j3d.Transform3D;
@@ -37,13 +36,13 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
 import javax.vecmath.Quat4f;
 
-import br.gnomex.cg.java3D.core.*;
-
+import br.gnomex.cg.java3D.core.Dodecahedron;
 
 import com.sun.j3d.utils.applet.MainFrame;
 import com.sun.j3d.utils.behaviors.interpolators.RotPosScaleTCBSplinePathInterpolator;
 import com.sun.j3d.utils.behaviors.interpolators.TCBKeyFrame;
 import com.sun.j3d.utils.behaviors.interpolators.TCBSplinePathInterpolator;
+import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 public class App3D extends Applet implements ActionListener {
@@ -112,29 +111,50 @@ public class App3D extends Applet implements ActionListener {
 		swNode.setCapability(Switch.ALLOW_SWITCH_WRITE);
 		tg.addChild(swNode);
 		// appearance
+		
 		Appearance ap = new Appearance();
 		Material material = new Material();
 		material.setCapability(Material.ALLOW_COMPONENT_WRITE);
 		material.setColorTarget(Material.AMBIENT);
 		ap.setMaterial(material);
+		
+		Appearance pa = new Appearance();
+		Material mm = new Material();
+		mm.setCapability(Material.ALLOW_COMPONENT_WRITE);
+		mm.setColorTarget(Material.AMBIENT_AND_DIFFUSE);
+		pa.setMaterial(mm);
+		
 		TransparencyAttributes transAttr = new TransparencyAttributes(
 				TransparencyAttributes.BLENDED,0.5f);
+		
 		transAttr.setCapability(TransparencyAttributes.ALLOW_VALUE_WRITE);
 		ap.setTransparencyAttributes(transAttr);
-		// gull
-		Shape3D shape = new Shape3D(new GullCG(), ap);
+		
+		//
 		Transform3D trans = new Transform3D();
 		trans.setScale(0.5);
-		TransformGroup tgScale = new TransformGroup(trans);
-		swNode.addChild(tgScale);
-		tgScale.addChild(shape);
+		
+//		Transform3D tr = new Transform3D();
+//		tr.setScale(0.6);
+		
+		//Cilynder
+		Cylinder cylinder = new Cylinder();
+		cylinder.setAppearance(pa);
+		
 		// dodecahedron
 		Dodecahedron dodec = new Dodecahedron();
-		dodec.setAppearance(ap);
-		trans.setScale(0.1);
-		tgScale = new TransformGroup(trans);
+		dodec.setAppearance(ap);		
+
+//		TransformGroup tgCylinder = new TransformGroup(tr);
+//		swNode.addChild(tgCylinder);
+//		tgCylinder.addChild(cylinder);		
+		
+		TransformGroup tgScale = new TransformGroup(trans);
 		swNode.addChild(tgScale);
+		tgScale.addChild(cylinder);
 		tgScale.addChild(dodec);
+		
+		
 		// interpolators    
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0,0,0),100);
 		Alpha alpha = new Alpha(-1, 6000);
@@ -146,6 +166,7 @@ public class App3D extends Applet implements ActionListener {
 		color.setSchedulingBounds(bounds);
 		color.setEnable(true);
 		root.addChild(color);
+		
 		// transparency
 		transparency = new TransparencyInterpolator(alpha, transAttr);
 		transparency.setSchedulingBounds(bounds);
@@ -156,16 +177,19 @@ public class App3D extends Applet implements ActionListener {
 		sw.setSchedulingBounds(bounds);
 		transparency.setEnable(false);
 		root.addChild(sw);
+		
 		// rotation
 		rotator = new RotationInterpolator(alpha, tg);
 		rotator.setSchedulingBounds(bounds);
 		rotator.setEnable(false);
 		root.addChild(rotator);
+		
 		// translation
 		translator = new PositionInterpolator(alpha, tg);
 		translator.setSchedulingBounds(bounds);
 		translator.setEnable(false);
 		root.addChild(translator);
+		
 		// zoom
 		zoom = new ScaleInterpolator(alpha, tg);
 		zoom.setSchedulingBounds(bounds);
@@ -215,6 +239,7 @@ public class App3D extends Applet implements ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
+		System.out.println("COmmand is: " + cmd);
 		if ("Rotation".equals(cmd)) {
 			current.setEnable(false);
 			current = rotator;
